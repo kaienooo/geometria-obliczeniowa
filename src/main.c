@@ -1,53 +1,18 @@
-#define BUFFER_SIZE 64
+#ifdef TEST
+#include "../include/test.h"
+#endif
+
 #include <stdio.h>
 #include <string.h>
-
-typedef struct 
-{
-    float x;
-    float y;
-    float z;
-} Vector3;
-
-Vector3 Vector3Add(Vector3 u, Vector3 v)
-{
-    return (Vector3){u.x + v.x, u.y + v.y, u.z + v.z};
-}
-
-void Vector3ToStr(char* s, size_t n, Vector3 u)
-{
-    snprintf(s,n,"x: %0.6f\ty: %0.6f\tz: %0.6f\n",u.x,u.y,u.z);
-}
-
-
-void testVector3Add(char* test, int testn,Vector3 u, Vector3 v,Vector3 eV)
-{
-    char testResult[BUFFER_SIZE];
-    char expected[BUFFER_SIZE];
-    char passed[8];
-
-    u = Vector3Add(u,v);
-
-    Vector3ToStr(testResult,BUFFER_SIZE,u);
-    Vector3ToStr(expected,BUFFER_SIZE,eV);
-
-    if (!strcmp(expected,testResult))
-    {
-        memcpy(passed,"Passed",8);
-    }
-    else
-    {
-        memcpy(passed,"Failed",8);
-    }
-
-    printf("Test %s No. %d:\t%s\nExpected\t%s\ngot\t\t%s\n",test,testn,passed,expected,testResult);
-}
+#include "../include/utils.h"
 
 int main()
 {
     char bufor[BUFFER_SIZE];
-
-    memcpy(bufor,"Dodawanie wektorow 3D",BUFFER_SIZE);
+    // RUN TESTS
+    #ifdef TEST
+    printf("Running tests!\n");
+    memcpy(bufor,"Operacje na wektorach 3D",BUFFER_SIZE);
     int testn = 1;
 
     Vector3 a = {.0f,.0f,.0f};
@@ -67,4 +32,46 @@ int main()
     c = (Vector3){.0f,.0f,.0f};
 
     testVector3Add(bufor,testn++,a,b,c);
+
+    a = (Vector3){0.5f,0.5f,0.5f};
+    b = (Vector3){0.5f,0.5f,0.5f};
+    c = (Vector3){.0f,.0f,.0f};
+
+    testVector3Sub(bufor,testn++,a,b,c);
+
+    a = (Vector3){2.0f,2.0f,2.0f};
+    float t = 2.0f;
+    c = (Vector3){4.0f,4.0f,4.0f};
+
+    testVector3Mult(bufor,testn++,a,t,c);
+
+    printf("\n\n");
+
+    memcpy(bufor,"Operacje na wektorach 2D",BUFFER_SIZE);
+
+    testn = 1;
+
+    Vector2 i = {-15.0f,-15.0};
+    Vector2 j = {15.0f,15.0f};
+    Vector2 k = {.0f,.0f};
+
+    testVector2Add(bufor,testn++,i,j,k);
+
+    i = (Vector2){3.33f,3.33f};
+    j = (Vector2){2.0f,2.0f};
+    k = (Vector2){1.33f,1.33f};
+
+    testVector2Sub(bufor,testn++,i,j,k);
+
+    i = (Vector2){3.33f,3.33f};
+    t = 2.0f;
+    k = (Vector2){6.66f, 6.66f};
+
+    testVector2Mult(bufor,testn++,i,t,k);
+
+    #endif
+    // END RUN TESTS    
+
+
+
 }

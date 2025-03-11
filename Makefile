@@ -1,35 +1,36 @@
-#Katalogi
-SRC_DIR = src
-INCLUDE_DIR = include
-BIN_DIR = bin
-
-# Nazwa pliku wynikowego
-OUTPUT = $(BIN_DIR)/program
-
-# Kompilator
+#Compiler and flags
 CC = gcc
-CFLAGS = -Wall -Wextra -std=c23 -I$(INCLUDE_DIR)
+CFLAGS = -Wall -Wextra -std=c23
+TEST_FLAGS = -DTEST  # Define TEST flag
 
-# Pliki źródłowe i obiektowe
+# Directories
+SRC_DIR = src
+BIN_DIR = bin
+INCLUDE_DIR = include
+
+# Files
 SRC = $(wildcard $(SRC_DIR)/*.c)
 OBJ = $(patsubst $(SRC_DIR)/%.c, $(BIN_DIR)/%.o, $(SRC))
+OUTPUT = $(BIN_DIR)/program
 
-# Domyślny cel
+# Default compilation (without tests)
 all: $(OUTPUT)
 
-# Kompilacja programu
 $(OUTPUT): $(OBJ) | $(BIN_DIR)
 	$(CC) $(CFLAGS) $(OBJ) -o $@
 
-# Kompilacja plików .c do .o w bin/
 $(BIN_DIR)/%.o: $(SRC_DIR)/%.c | $(BIN_DIR)
 	$(CC) $(CFLAGS) -c $< -o $@
 
-# Tworzenie katalogu bin, jeśli nie istnieje
+# Enable test compilation
+test: CFLAGS += $(TEST_FLAGS)
+test: clean all  # Recompile everything with TEST flag
+
+# Create bin directory if it doesn’t exist
 $(BIN_DIR):
 	mkdir -p $(BIN_DIR)
 
-# Usuwanie plików obiektowych i programu
+# Clean build files
 clean:
 	rm -rf $(BIN_DIR)
 
