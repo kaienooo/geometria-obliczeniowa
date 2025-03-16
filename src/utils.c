@@ -1,6 +1,17 @@
 #include "../include/utils.h"
 
 #include <stdio.h>
+//----------------------------------------------------- DATA FUNCTION -----------------------------------------------------------------
+
+float getDataTwoDimXFromElements(ProgData* data, size_t element, size_t vertex)
+{
+    return data->twoDim[data->elements[element].vertices[vertex]].x;
+}
+
+float getDataTwoDimYFromElements(ProgData* data, size_t element, size_t vertex)
+{
+    return data->twoDim[data->elements[element].vertices[vertex]].y;
+}
 
 //----------------------------------------------------- Vector 2 FUNCTION -------------------------------------------------------------
 
@@ -24,6 +35,11 @@ void Vector2ToStr(char* s, size_t n, Vector2 u)
     snprintf(s,n,"x: %0.6f\ty: %0.6f\n",u.x,u.y);
 }
 
+float Vector2DotProduct(Vector2 u, Vector2 v)
+{
+    return u.x * v.x + u.y * v.y;
+}
+
 //----------------------------------------------------- Vector 3 FUNCTION -------------------------------------------------------------
 
 Vector3 Vector3Add(Vector3 u, Vector3 v)
@@ -44,4 +60,18 @@ Vector3 Vector3Mult(Vector3 u, float t)
 void Vector3ToStr(char* s, size_t n, Vector3 u)
 {
     snprintf(s,n,"x: %0.6f\ty: %0.6f\tz: %0.6f\n",u.x,u.y,u.z);
+}
+
+float Vector3DotProduct(Vector3 u, Vector3 v)
+{
+    return u.x * v.x + u.y * v.y + u.z * v.z;
+}
+
+//  i   j   k
+//  u.x u.y u.z
+//  v.x v.y v.z
+
+Vector3 Vector3CrossProduct(Vector3 u, Vector3 v)
+{
+    return (Vector3){u.y * v.z - u.z * v.y, u.z * v.x - u.x * v.z, u.x * v.y - u.y * v.x};
 }

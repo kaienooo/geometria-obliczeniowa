@@ -23,36 +23,40 @@ typedef struct
     float z;
 } Vector3;
 
-//----------------------------------------------------- Line STRUCT -------------------------------------------------------------------
-
-typedef struct
-{
-    Vector2 startPos;
-    Vector2 endPos;
-} Line2D;
-
-typedef struct
-{
-    Vector3 startPos;
-    Vector3 endPos;
-} Line3D;
-
-//----------------------------------------------------- Face STRUCT -------------------------------------------------------------------
+//----------------------------------------------------- Element STRUCT ----------------------------------------------------------------
 
 typedef struct
 {
     size_t verticesCount;
     size_t* vertices;
-    //size_t normal;
-} Face;
+} Element;
+
+//----------------------------------------------------- ProgData STRUCT ---------------------------------------------------------------
+
+typedef struct
+{
+    Vector2* twoDim;
+    Vector3* threeDim;
+
+    size_t twoDimCount;
+    size_t threeDimCount;
+
+    Element* elements;
+    size_t elementsCount;
+} ProgData;
+
+//----------------------------------------------------- DATA FUNCTION ---------------------------------------------------------------
+
+float getDataTwoDimXFromElements(ProgData* data, size_t element, size_t vertex);
+float getDataTwoDimYFromElements(ProgData* data, size_t element, size_t vertex);
 
 //----------------------------------------------------- Vector 2 FUNCTION -------------------------------------------------------------
 
 Vector2 Vector2Add(Vector2 u, Vector2 v);
 Vector2 Vector2Sub(Vector2 u, Vector2 v);
 Vector2 Vector2Mult(Vector2 u, float t);
-Vector2 Vector2DotProduct(Vector2 u, Vector2 v);
-Vector2 Vector2CrossProduct(Vector2 u, Vector2 v);
+float Vector2DotProduct(Vector2 u, Vector2 v);
+
 
 void Vector2ToStr(char* s, size_t n, Vector2 u);
 
@@ -61,7 +65,7 @@ void Vector2ToStr(char* s, size_t n, Vector2 u);
 Vector3 Vector3Add(Vector3 u, Vector3 v);
 Vector3 Vector3Sub(Vector3 u, Vector3 v);
 Vector3 Vector3Mult(Vector3 u, float t);
-Vector3 Vector3DotProduct(Vector3 u, Vector3 v);
+float Vector3DotProduct(Vector3 u, Vector3 v);
 Vector3 Vector3CrossProduct(Vector3 u, Vector3 v);
 
 void Vector3ToStr(char* s, size_t n, Vector3 u);
