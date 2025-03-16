@@ -1,4 +1,4 @@
-#include <../include/parser.h>
+#include "../include/parser.h"
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -24,7 +24,7 @@ void loadData(char* filename, ProgData* data)
         exit(1);
     }
 
-    char buffer[BUFFER_SIZE];
+    char buffer[BUFFER_SIZE] = {0};
     Mode mode = DEFAULT;
 
     while (fgets(buffer,BUFFER_SIZE,file))
@@ -34,13 +34,13 @@ void loadData(char* filename, ProgData* data)
             continue;
         }
 
-        if (buffer[0] == '*' && strcmp(buffer,"*NODES\n"))
+        if (buffer[0] == '*' && !memcmp(buffer,"*NODES",6))
         {
             mode = NODES;
             continue;
         }
 
-        if(buffer[0] == '*' && strcmp(buffer,"*ELEMENTS\n"))
+        if(buffer[0] == '*' && !memcmp(buffer,"*ELEMENTS",9))
         {
             mode = ELEMENTS;
             continue;
@@ -56,19 +56,21 @@ void loadData(char* filename, ProgData* data)
         case ELEMENTS:
             data->elementsCount++;
             break;
-        DEFAULT:
+        case DEFAULT:
             break;
         }
     }
 
     // TODO: Implement memory allocation for 3D data
 
+    printf("twoDimCount: %llu\nelementsCount: %llu\n",data->twoDimCount,data->elementsCount);
+
     data->twoDim = (Vector2*)malloc(sizeof(Vector2) * data->twoDimCount);
     data->elements = (Element*)malloc(sizeof(Element) * data->elementsCount);
 
     size_t v2d = 0, e = 0;
 
-    size_t id;
+    size_t id = 0;
 
     rewind(file);
 
@@ -79,13 +81,13 @@ void loadData(char* filename, ProgData* data)
             continue;
         }
 
-        if (buffer[0] == '*' && strcmp(buffer,"*NODES\n"))
+        if (buffer[0] == '*' && !memcmp(buffer,"*NODES",6))
         {
             mode = NODES;
             continue;
         }
 
-        if(buffer[0] == '*' && strcmp(buffer,"*ELEMENTS\n"))
+        if(buffer[0] == '*' && !memcmp(buffer,"*ELEMENTS",9))
         {
             mode = ELEMENTS;
             continue;
@@ -94,7 +96,7 @@ void loadData(char* filename, ProgData* data)
         switch (mode)
         {
         case NODES:
-            sscanf(buffer,"%d %f %f",id,&(data->twoDim[v2d].x),&(data->twoDim[v2d].y));
+            sscanf(buffer,"%llu %f %f",&id,&(data->twoDim[v2d].x),&(data->twoDim[v2d].y));
             v2d++;
             break;
         case ELEMENTS:
@@ -115,7 +117,7 @@ void parseElement(char* buffer, Element* element)
     element->vertices = (size_t*)malloc(sizeof(size_t) * element->verticesCount);
 
     buffer += 2;    // skip id and space
-    for (int i = 0; i < element->verticesCount; i++)
+    for (size_t i = 0; i < element->verticesCount; i++)
     {
         element->vertices[i] = atoi(buffer);
         buffer += 2;

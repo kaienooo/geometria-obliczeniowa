@@ -9,7 +9,7 @@
 
 int main(int argc, char** argv)
 {
-    char bufor[BUFFER_SIZE];
+    char bufor[BUFFER_SIZE] = {0};
     // RUN TESTS
     #ifdef TEST
     printf("Running tests!\n");
@@ -109,10 +109,10 @@ int main(int argc, char** argv)
 
     for (size_t i = 0; i < data.elementsCount; i++)
     {
-        printf("Element %d: ",i);
+        printf("Element %llu: ",i);
         for (size_t j = 0; j < data.elements[i].verticesCount; j++)
         {
-            printf("%f %f\n",getDataTwoDimXFromElements(&data,i,j),getDataTwoDimYFromElements(&data,i,j));
+            printf("id: %llu x: %f y: %f\n",j + 1,getDataTwoDimXFromElements(&data,i,j),getDataTwoDimYFromElements(&data,i,j));
         }
         printf("\n");
     }
