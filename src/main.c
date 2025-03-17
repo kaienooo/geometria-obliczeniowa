@@ -4,16 +4,24 @@
     
 #include <stdio.h>
 #include <string.h>
+#include <stdlib.h>
 #include "../include/utils.h"
 #include "../include/parser.h"
+#include "../include/prepare_data.h"
+
+#include "../lua/include/lua.h"
+#include "../lua/include/lualib.h"
+#include "../lua/include/lauxlib.h"
+
 
 int main(int argc, char** argv)
 {
+    const char filename[] = "data/plot_data.txt";
     char bufor[BUFFER_SIZE] = {0};
     // RUN TESTS
     #ifdef TEST
     printf("Running tests!\n");
-    memcpy(bufor,"Operacje na wektorach 3D",BUFFER_SIZE);
+    memcpy(bufor,"3d vector calcualtions",BUFFER_SIZE);
     int testn = 1;
 
     Vector3 a = {.0f,.0f,.0f};
@@ -67,7 +75,7 @@ int main(int argc, char** argv)
 
     printf("\n\n");
 
-    memcpy(bufor,"Operacje na wektorach 2D",BUFFER_SIZE);
+    memcpy(bufor,"2d vector calcualtions",BUFFER_SIZE);
 
     testn = 1;
 
@@ -102,21 +110,66 @@ int main(int argc, char** argv)
 
     for (size_t i = 0; i < data.twoDimCount; i++)
     {
-        printf("2D: %f %f\n",data.twoDim[i].x,data.twoDim[i].y);
+        printf("2D: %llu %f %f\n",i + 1,data.twoDim[i].x,data.twoDim[i].y);
     }
 
     printf("\n");
 
     for (size_t i = 0; i < data.elementsCount; i++)
     {
-        printf("Element %llu: ",i);
+        printf("Element %llu:\n",i);
         for (size_t j = 0; j < data.elements[i].verticesCount; j++)
         {
-            printf("id: %llu x: %f y: %f\n",j + 1,getDataTwoDimXFromElements(&data,i,j),getDataTwoDimYFromElements(&data,i,j));
+            size_t vertex = data.elements[i].vertices[j];
+            printf("id: %llu x: %f y: %f\n",vertex,data.twoDim[vertex-1].x,data.twoDim[vertex-1].y);
         }
         printf("\n");
     }
+
+    float x1;
+    float x2;
+    float y1;
+    float y2;
+
+    prepareData(filename,&data,&x1,&x2,&y1,&y2);
+
+    // TODO: do funkcji
     
+    // gnuplot script
+    FILE* gnuplot_script = fopen("plot_script.plt","w");
+    fprintf(gnuplot_script,"set xrange [%d:%d]\n",(int)(x1-2),(int)(x2+2));
+    fprintf(gnuplot_script,"set yrange [%d:%d]\n",(int)(y1-2),(int)(y2+2));
+    fprintf(gnuplot_script,"plot '%s' using 1:2:3:4 with vectors nohead",filename);
+    
+    fclose(gnuplot_script);
+    
+    lua_State *L = luaL_newstate(); // Create a new Lua state
+    luaL_openlibs(L); // Load Lua libraries
+    
+
+    if (luaL_dofile(L, "lua_s/script.lua")) {
+        fprintf(stderr, "Błąd: %s\n", lua_tostring(L, -1));
+        return 1;
+    }
+
+    lua_getglobal(L, "drawData"); // Get the function prepareData from Lua
+
+    if (lua_pcall(L, 0, 0, 0) != LUA_OK) 
+    {
+        fprintf(stderr, "Error: %s\n", lua_tostring(L, -1));
+    }
+
+    lua_close(L); // Close the Lua state
+
+
+    //deallocation
+    free(data.twoDim);
+
+    for (size_t i = 0; i < data.elementsCount; i++)
+    {
+        free(data.elements[i].vertices);
+    }
+    free(data.elements);
 
     return 0;
 }

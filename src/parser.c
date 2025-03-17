@@ -113,7 +113,7 @@ void loadData(char* filename, ProgData* data)
 
 void parseElement(char* buffer, Element* element)
 {
-    element->verticesCount = strlen(buffer)/2;
+    element->verticesCount = (strlen(buffer) - 1)/2;
     element->vertices = (size_t*)malloc(sizeof(size_t) * element->verticesCount);
 
     buffer += 2;    // skip id and space

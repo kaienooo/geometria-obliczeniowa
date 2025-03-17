@@ -75,3 +75,10 @@ Vector3 Vector3CrossProduct(Vector3 u, Vector3 v)
 {
     return (Vector3){u.y * v.z - u.z * v.y, u.z * v.x - u.x * v.z, u.x * v.y - u.y * v.x};
 }
+
+//----------------------------------------------------- LINES FUNCTION -------------------------------------------------------------
+
+Vector2 getLineIntersection(Vector2 p1, Vector2 p2)
+{
+    return (Vector2){(p2.y - p1.y)/(p2.x - p1.x), p1.y - (p2.y - p1.y)/(p2.x - p1.x) * p1.x};
+}

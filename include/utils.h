@@ -3,9 +3,11 @@
 
 #include <stddef.h>
 #define BUFFER_SIZE 64
+#define GNU_PLOT_STEP 0.1f
 
 //----------------------------------------------------- Vector 2 STRUCT ---------------------------------------------------------------
-
+// prosta jako Vector2
+// y = Vector2.x * x + Vector2.y
 typedef struct
 {
     float x;
@@ -13,8 +15,6 @@ typedef struct
 } Vector2;
 
 //----------------------------------------------------- Vector 3 STRUCT ---------------------------------------------------------------
-// prosta jako Vector3
-// Ax + By + C = 0, gdzie Vector3.x = A itd.
 
 typedef struct 
 {
@@ -69,5 +69,9 @@ float Vector3DotProduct(Vector3 u, Vector3 v);
 Vector3 Vector3CrossProduct(Vector3 u, Vector3 v);
 
 void Vector3ToStr(char* s, size_t n, Vector3 u);
+
+//----------------------------------------------------- LINES FUNCTION -------------------------------------------------------------
+
+Vector2 getLineIntersection(Vector2 p1, Vector2 p2);
 
 #endif

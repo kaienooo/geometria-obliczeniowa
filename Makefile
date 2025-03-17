@@ -1,4 +1,4 @@
-#Compiler and flags
+# Compiler and flags
 CC = gcc
 CFLAGS = -Wall -Wextra -std=c23
 TEST_FLAGS = -DTEST  # Define TEST flag
@@ -7,6 +7,11 @@ TEST_FLAGS = -DTEST  # Define TEST flag
 SRC_DIR = src
 BIN_DIR = bin
 INCLUDE_DIR = include
+
+# Lua configuration
+LUA_DIR = lua
+LUA_INCLUDE = -I$(LUA_DIR)/include
+LUA_LIB = $(LUA_DIR)/liblua54.a  # Ścieżka do pliku statycznej biblioteki
 
 # Files
 SRC = $(wildcard $(SRC_DIR)/*.c)
@@ -17,10 +22,10 @@ OUTPUT = $(BIN_DIR)/program
 all: $(OUTPUT)
 
 $(OUTPUT): $(OBJ) | $(BIN_DIR)
-	$(CC) $(CFLAGS) $(OBJ) -o $@
+	$(CC) $(CFLAGS) $(LUA_INCLUDE) $(OBJ) -o $@ $(LUA_LIB) -lm
 
 $(BIN_DIR)/%.o: $(SRC_DIR)/%.c | $(BIN_DIR)
-	$(CC) $(CFLAGS) -c $< -o $@
+	$(CC) $(CFLAGS) $(LUA_INCLUDE) -c $< -o $@
 
 # Enable test compilation
 test: CFLAGS += $(TEST_FLAGS)
@@ -33,4 +38,3 @@ $(BIN_DIR):
 # Clean build files
 clean:
 	rm -rf $(BIN_DIR)
-
