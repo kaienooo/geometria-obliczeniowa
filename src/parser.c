@@ -3,13 +3,24 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include "../include/utils.h"
 
 typedef enum
 {
     DEFAULT,
     NODES,
-    ELEMENTS
+    ELEMENTS,
+    CIRCLES
 } Mode;
+
+// CIRCLE in format:
+// CIRCLE is an element and insert element id which is an increment of previous element
+// id_e         -- integer
+// n            -- integer (how many vertices)
+// a            -- a as in (x -a)^2 + (y - b)^2 = r^2
+// b            -- b as in ...
+// r            -- r as in ...
+
 
 void loadData(char* filename, ProgData* data)
 {
@@ -46,6 +57,12 @@ void loadData(char* filename, ProgData* data)
             continue;
         }
 
+        if(buffer[0] == '*' && !memcmp(buffer,"*CIRCLES",8))
+        {
+            mode = CIRCLES;
+            continue;
+        }
+
     // TODO: Implement reading data when working in 3D
 
         switch (mode)
@@ -56,14 +73,15 @@ void loadData(char* filename, ProgData* data)
         case ELEMENTS:
             data->elementsCount++;
             break;
+        case CIRCLES:
+            data->elementsCount++;
+            break;
         case DEFAULT:
             break;
         }
     }
 
     // TODO: Implement memory allocation for 3D data
-
-    printf("twoDimCount: %llu\nelementsCount: %llu\n",data->twoDimCount,data->elementsCount);
 
     data->twoDim = (Vector2*)malloc(sizeof(Vector2) * data->twoDimCount);
     data->elements = (Element*)malloc(sizeof(Element) * data->elementsCount);
@@ -93,6 +111,12 @@ void loadData(char* filename, ProgData* data)
             continue;
         }
 
+        if(buffer[0] == '*' && !memcmp(buffer,"*CIRCLES",8))
+        {
+            mode = CIRCLES;
+            continue;
+        }
+
         switch (mode)
         {
         case NODES:
@@ -103,6 +127,10 @@ void loadData(char* filename, ProgData* data)
             parseElement(buffer,&(data->elements[e]));
             e++;
             break;
+        case CIRCLES:
+            parseCircle(buffer,e,data);
+            e++;
+            break;
         case DEFAULT:
             break;
         }
@@ -111,6 +139,7 @@ void loadData(char* filename, ProgData* data)
     fclose(file);
 }
 
+//TODO: update parseElement to work with more than 1 digit arguments
 void parseElement(char* buffer, Element* element)
 {
     element->verticesCount = (strlen(buffer) - 1)/2;
@@ -122,4 +151,18 @@ void parseElement(char* buffer, Element* element)
         element->vertices[i] = atoi(buffer);
         buffer += 2;
     }
+}
+
+//used when parsing from file
+void parseCircle(char* buffer, size_t e, ProgData* data)
+{
+    printf("\n\nParsing Circle    %s",buffer);
+    int id = 0;
+    int n = 0;
+    Vector3 circle = (Vector3){0.0f,0.0f,0.0f};
+    sscanf(buffer,"%d %d %f %f %f",&id,&n,&circle.x,&circle.y,&circle.z);
+
+    printf("id = %d, n = %d, a = %f, b = %f, c = %f\n",id,n,circle.x,circle.y,circle.z);
+
+    generateCircleAllocated(circle,e,n,data);
 }

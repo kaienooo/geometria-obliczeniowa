@@ -16,7 +16,8 @@
 
 int main(int argc, char** argv)
 {
-    const char filename[] = "data/plot_data.txt";
+    char filenamePlotData[] = "data/plot_data.txt";
+    char filenameLabelsDate[] = "data/labels_data.txt";
     char bufor[BUFFER_SIZE] = {0};
     // RUN TESTS
     #ifdef TEST
@@ -108,13 +109,24 @@ int main(int argc, char** argv)
     ProgData data;
     loadData(argv[1],&data);
 
+    Vector2 vec2 = getLineFromPoints((Vector2){0,0} , (Vector2){1,1});
+
+    printf("line from points: (0,0) (1,0) y = %fx + %f", vec2.x, vec2.y);
+
+    splitCircle((Vector3){10.0f,10.0f,5.0f},(Vector2){2.0f,0.0f},10,&data);
+
+    //generateCircle((Vector3){10.0f,1.0f,3.0f},0,&data);
+
+    /*
+    printf("twoDimCount: %llu\nelementsCount: %llu\n",data.twoDimCount,data.elementsCount);
+    
     for (size_t i = 0; i < data.twoDimCount; i++)
     {
         printf("2D: %llu %f %f\n",i + 1,data.twoDim[i].x,data.twoDim[i].y);
     }
-
+    
     printf("\n");
-
+    
     for (size_t i = 0; i < data.elementsCount; i++)
     {
         printf("Element %llu:\n",i);
@@ -122,39 +134,45 @@ int main(int argc, char** argv)
         {
             size_t vertex = data.elements[i].vertices[j];
             printf("id: %llu x: %f y: %f\n",vertex,data.twoDim[vertex-1].x,data.twoDim[vertex-1].y);
+            // pamiec 0 - id 1
+            // pamiec 1 - id 2
+            // pamiec 2 - id 3
         }
         printf("\n");
     }
-
+    */
+    
     float x1;
     float x2;
     float y1;
     float y2;
-
-    prepareData(filename,&data,&x1,&x2,&y1,&y2);
-
+    
+    prepareData(filenamePlotData,&data,&x1,&x2,&y1,&y2);
+    prepareLabels(filenameLabelsDate,&data);
+    
     // TODO: do funkcji
     
     // gnuplot script
-    FILE* gnuplot_script = fopen("plot_script.plt","w");
-    fprintf(gnuplot_script,"set xrange [%d:%d]\n",(int)(x1-2),(int)(x2+2));
-    fprintf(gnuplot_script,"set yrange [%d:%d]\n",(int)(y1-2),(int)(y2+2));
-    fprintf(gnuplot_script,"plot '%s' using 1:2:3:4 with vectors nohead",filename);
-    
-    fclose(gnuplot_script);
+   
     
     lua_State *L = luaL_newstate(); // Create a new Lua state
     luaL_openlibs(L); // Load Lua libraries
     
 
     if (luaL_dofile(L, "lua_s/script.lua")) {
-        fprintf(stderr, "Błąd: %s\n", lua_tostring(L, -1));
+        fprintf(stderr, "Error: %s\n", lua_tostring(L, -1));
         return 1;
     }
 
     lua_getglobal(L, "drawData"); // Get the function prepareData from Lua
 
-    if (lua_pcall(L, 0, 0, 0) != LUA_OK) 
+    lua_pushinteger(L, (int)x1);
+    lua_pushinteger(L, (int)x2);
+    lua_pushinteger(L, (int)y1);
+    lua_pushinteger(L, (int)y2);
+    lua_pushstring(L, filenamePlotData);
+    lua_pushstring(L, filenameLabelsDate);
+    if (lua_pcall(L, 6, 0, 0) != LUA_OK) 
     {
         fprintf(stderr, "Error: %s\n", lua_tostring(L, -1));
     }

@@ -21,6 +21,9 @@ void prepareData(char* filename, ProgData* data,float* x1, float* x2, float* y1,
     *y1 = data->twoDim[0].y;
     *y2 = data->twoDim[0].y;
 
+
+    // find min and max values
+    // for plotting
     for (size_t i = 1; i <data->twoDimCount; i++)
     {
         if (data->twoDim[i].x < *x1)
@@ -46,6 +49,9 @@ void prepareData(char* filename, ProgData* data,float* x1, float* x2, float* y1,
 
     size_t linesCount = 0;
 
+    // obliczanie ile prostych jest do narysowania
+    // gdy punktow jest 2 to rysuje sie 1 linie
+    // gdy punktow jest n>2 to rysuje sie n linii
     for (size_t i = 0; i < data->elementsCount; i++)
     {
         if (data->elements[i].verticesCount == 2)
@@ -100,6 +106,25 @@ void prepareData(char* filename, ProgData* data,float* x1, float* x2, float* y1,
     }
     */
    fclose(file);
+}
+
+void prepareLabels(char* filename, ProgData* data)
+{
+    FILE* file = fopen(filename,"w");
+
+    if (file == NULL)   
+    {
+        printf("Error opening file!\n");
+        fprintf(stderr,"Error opening file!\n");
+        exit(1);
+    }
+
+    for (size_t i = 0; i < data->twoDimCount; i++)
+    {
+        fprintf(file,"%lld %f %f\n",i + 1,data->twoDim[i].x,data->twoDim[i].y);
+    }
+
+    fclose(file);
 }
 
 void writeVector(FILE* file, Vector2 start, Vector2 end)
