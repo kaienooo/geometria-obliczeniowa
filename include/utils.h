@@ -125,7 +125,13 @@ int pointVsVector(Vector2 p, Vector2 q, Vector2 r);
 
 void translateSegment(Segment* segment, Vector2 translation);
 
+//----------------------------------------------------- ELEMENT FUNCTION -------------------------------------------------------------
+
+void translateElement(Element* element, Vector2 translation, ProgData* data);
+
 //----------------------------------------------------- CIRCLE FUNCTION -------------------------------------------------------------
+
+void circleLineIntersection(Vector3 circle, Vector2 line, Vector2* p1, Vector2* p2);
 
 //no memory allocated for Element and points
 void generateCircle(Vector3 circle, int n, ProgData* data);
@@ -133,7 +139,7 @@ void generateCircle(Vector3 circle, int n, ProgData* data);
 //memory allocated for Element but not for points
 void generateCircleAllocated(Vector3 circle, size_t e, int n, ProgData* data);
 
-void generateSplittedElementsFromCircle(Vector3 circle, int n, Vector2 p1, Vector2 p2, ProgData* data);
+void generateSplittedElementsFromCircle(Vector3 circle, Vector2 line, int n, Vector2 p1, Vector2 p2, ProgData* data);
 
 void splitCircle(Vector3 circle, Vector2 line,int n, ProgData* data);
 

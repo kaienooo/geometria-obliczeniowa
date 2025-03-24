@@ -8,6 +8,7 @@ void prepareData(char* filename, ProgData* data, float* x1, float* x2, float* y1
 void prepareLabels(char* filename, ProgData* data);
 
 void writeVector(FILE* file, Vector2 start, Vector2 end);
+void writeNewVector(char* filename, Vector2 start, Vector2 end);
 
 
 #endif // PREPARE_DATA_H

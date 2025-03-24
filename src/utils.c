@@ -139,7 +139,65 @@ void translateSegment(Segment* segment, Vector2 translation)
     segment->p2 = Vector2Add(segment->p2,translation);
 }
 
+//----------------------------------------------------- ELEMENT FUNCTION -------------------------------------------------------------
+
+void translateElement(Element* element, Vector2 translation, ProgData* data)
+{
+    for (size_t i = 0; i < element->verticesCount; i++)
+    {
+        data->twoDim[element->vertices[i]-1] = Vector2Add(data->twoDim[element->vertices[i]-1],translation);
+    }
+}
+
 // ----------------------------------------------------- CIRCLE FUNCTION --------------------------------------------------------------
+
+void circleLineIntersection(Vector3 c, Vector2 l, Vector2* p1, Vector2* p2)
+{
+    printf("c.x = %f c.y = %f c.z = %f l.x = %f l.y = %f\n",c.x,c.y,c.z,l.x,l.y);
+
+    float Ly_Cy = l.y - c.y;
+    float delta = (4.0f * powf(l.x * Ly_Cy - c.x,2.0f)) - (4.0f * (l.x * l.x + 1.0f) * (Ly_Cy * Ly_Cy + c.x * c.x - c.z * c.z));
+
+
+    printf("A   = %f\n", l.x * l.x + 1.0f);
+    printf("B   = %f\n", 2.0f * (l.x * Ly_Cy - c.x));
+    printf("C   = %f\n", Ly_Cy * Ly_Cy + c.x * c.x - c.z * c.z);
+    printf("B^2 = %f\n", 4.0f * powf(l.x * Ly_Cy - c.x,2.0f));
+    printf("4AC = %f\n", (4.0f * (l.x * l.x + 1.0f) * (Ly_Cy * Ly_Cy + c.x * c.x - c.z * c.z)));
+
+    printf("delta = %f\n",delta);
+
+
+    if (fabsf(delta) - EPSILON < 0)
+    {
+        printf("Prosta jest styczna do okregu\n");
+        *p1 = *p2;      // dzieki temu program wie ze wystepuje blad
+        return;
+    }
+
+    if(delta < 0)
+    {
+        printf("Prosta nie ma punktow przeciecia z okregiem\n");
+        *p1 = *p2;      // dzieki temu program wie ze wystepuje blad
+        return;
+    }
+
+  
+    p1->x = ((-2.0f * (l.x * Ly_Cy - c.x)) - sqrtf(delta))/(2.0f * (l.x * l.x + 1.0f));
+    p2->x = (Ly_Cy * Ly_Cy + c.x * c.x - c.z * c.z) / (p1->x * (l.x * l.x + 1.0f));
+
+    printf("x1 = %f x2 = %f\n",p1->x, p2->x);
+
+    if (p2->x < p1->x)
+    {
+        float temp = p1->x;
+        p1->x = p2->x;
+        p2->x = temp;
+    }
+
+    p1->y = l.x * p1->x + l.y;
+    p2->y = l.x * p2->x + l.y;
+}
 
 void generateCircle(Vector3 circle, int n, ProgData* data)
 {
@@ -216,19 +274,21 @@ void generateCircleAllocated(Vector3 circle, size_t e, int n, ProgData* data)
     }
 }
 
-void generateSplittedElementsFromCircle(Vector3 circle, int n, Vector2 p1, Vector2 p2, ProgData* data)
+void generateSplittedElementsFromCircle(Vector3 circle,Vector2 line ,int n, Vector2 p1, Vector2 p2, ProgData* data)
 {
     data->elementsCount+=2;
     data->elements = realloc(data->elements,data->elementsCount * sizeof(Element));
     // allocate data for both elements
 
     size_t circleVerticesIndex = data->twoDimCount;
-    data->twoDimCount += n + 2;
+    data->twoDimCount += n + 4;
     data->twoDim = realloc(data->twoDim,data->twoDimCount * sizeof(Vector2));
-    data->twoDim[circleVerticesIndex] = p1;
-    data->twoDim[circleVerticesIndex+1] = p2;
+    data->twoDim[circleVerticesIndex] = p1;         //p1 left
+    data->twoDim[circleVerticesIndex+1] = p2;       //p2 left
+    data->twoDim[circleVerticesIndex+2] = p1;       //p1 right
+    data->twoDim[circleVerticesIndex+3] = p2;       //p2 right
 
-    circleVerticesIndex += 2;
+    circleVerticesIndex += 4;
 
     Element tempCircle;
     tempCircle.verticesCount = n;
@@ -280,28 +340,79 @@ void generateSplittedElementsFromCircle(Vector3 circle, int n, Vector2 p1, Vecto
     leftElement->vertices = malloc(sizeof(size_t) * left);
     rightElement->vertices = malloc(sizeof(size_t) * right);
 
+    /*
     leftElement->vertices[0] = circleVerticesIndex - 1;
     leftElement->vertices[1] = circleVerticesIndex;
-
+    
     rightElement->vertices[0] = circleVerticesIndex;
     rightElement->vertices[1] = circleVerticesIndex - 1;
+    */
 
-    size_t l = 2;
-    size_t r = 2;
+    size_t l = 0;
+    size_t r = 0;
+    
+    typedef enum
+    {
+        LEFT,
+        RIGHT,
+        DEFAULT
+    } Side;
 
+    Side side = DEFAULT;
+
+    if (left_right[0] == -1)
+        side = LEFT;
+    else
+        side = RIGHT;
+
+    // writing to memory information about points
     for (size_t i = 0; i < n; i++)
     {
-        if (left_right[i] == -1)
+        switch (side)
         {
-            leftElement->vertices[l] = tempCircle.vertices[i];
-            l++;
-        }
-        else if (left_right[i] == 1)
-        {
-            rightElement->vertices[r] = tempCircle.vertices[i];
-            r++;
+            case LEFT:
+                if(left_right[i] == -1)
+                {
+                    leftElement->vertices[l++] = tempCircle.vertices[i];
+                }
+                else
+                {
+                    leftElement->vertices[l++] = circleVerticesIndex - 3;
+                    leftElement->vertices[l++] = circleVerticesIndex - 2;
+                    rightElement->vertices[r++] = tempCircle.vertices[i];
+                    side = RIGHT;
+                }
+                break;
+            case RIGHT:
+                if(left_right[i] == 1)  // do tej pory po prawej i nowy tez po prawej
+                {
+                    rightElement->vertices[r++] = tempCircle.vertices[i];
+                }
+                else                    // do tej pory po prawej i nowy po lewej
+                {
+                    rightElement->vertices[r++] = circleVerticesIndex;
+                    rightElement->vertices[r++] = circleVerticesIndex - 1;
+                    leftElement->vertices[l++] = tempCircle.vertices[i];
+                    side = LEFT;
+                }
+                break;
+            case DEFAULT:
+                break;
         }
     }
+
+    // translating right element
+    // line.x = 0 exluded
+    float a2 = (-1.0f/line.x);
+
+    Vector2 translation = (Vector2){(circle.z/2.0f) / sqrtf(a2*a2 + 1), (a2*(circle.z/2.0f))/(sqrtf(a2*a2 + 1))};
+
+    printf("translation: x = %f, y =%f\n",translation.x, translation.y);
+    
+    translateElement(rightElement,translation,data);
+
+    printf("finished translation\n");
+    
 
     free(left_right);
 }
@@ -310,33 +421,21 @@ void splitCircle(Vector3 circle,Vector2 line,int n, ProgData* data)
 {
     if ( n < 3)
     {
-        printf("przyblizenie okregu musiec miec przynajmniej 3  punkty!");
+        printf("przyblizenie okregu musiec miec przynajmniej 3  punkty!\n");
         return;
     }
 
-    float delta = 4 * (
-        powf(line.x * line.y - circle.y * line.x - circle.x,2) -
-        (line.x * line.x - 1) * (line.y * line.y + circle.y * circle.y + circle.x * circle.x - circle.z - 2 * circle.y * line.y));
+    Vector2 p1;
+    Vector2 p2;
 
-    printf("%f",delta);
+    circleLineIntersection(circle,line,&p1,&p2);
 
-    if (delta + EPSILON < 0)
+    printf("p1 %f %f\np2 %f %f\n",p1.x,line.x * p1.x + line.y,p2.x,line.x * p2.x + line.y);
+
+    if (p1.x == p2.x && p2.x == p2.y)
     {
-        printf("Brak punktow przeciecia pomiedzy okregiem a linia\n");
         return;
     }
 
-    if(fabsf(delta) - EPSILON < 0)
-    {
-        printf("Punkt przeciecia na okregu, prosta jest styczna do okregu\n");
-        return;
-    }
-
-    float x1 = (-2 * (line.x * line.y - circle.y * line.x - circle.x) - (line.x * line.y - circle.y * line.x - circle.x < 0 ? -1.0f : 1.0f) * sqrtf(delta))/ (2 * (line.x * line.x - 1));
-    float x2 = (line.y * line.y + circle.y * circle.y + circle.x * circle.x - circle.z - 2.0f * circle.y * line.y)/( (line.x * line.x - 1) * x1);
-
-    Vector2 p1 = (Vector2){x1,line.x * x1 + line.y};
-    Vector2 p2 = (Vector2){x2,line.x * x2 + line.y};
-
-    generateSplittedElementsFromCircle(circle,n,p1,p2,data);
+    generateSplittedElementsFromCircle(circle,line,n,p1,p2,data);
 }

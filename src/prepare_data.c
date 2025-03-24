@@ -131,3 +131,10 @@ void writeVector(FILE* file, Vector2 start, Vector2 end)
 {
     fprintf(file,"%f %f %f %f\n",start.x,start.y,end.x - start.x, end.y - start.y);
 }
+
+void writeNewVector(char* filename, Vector2 start, Vector2 end)
+{
+    FILE* file = fopen(filename,"a");
+    fprintf(file,"%f %f %f %f\n",start.x,start.y,end.x - start.x, end.y - start.y);
+    fclose(file);
+}

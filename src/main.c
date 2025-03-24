@@ -17,9 +17,10 @@
 int main(int argc, char** argv)
 {
     char filenamePlotData[] = "data/plot_data.txt";
-    char filenameLabelsDate[] = "data/labels_data.txt";
+    char filenameLabelsData[] = "data/labels_data.txt";
     char bufor[BUFFER_SIZE] = {0};
     // RUN TESTS
+    // TODO: make function runAllTests() or modular testing framework
     #ifdef TEST
     printf("Running tests!\n");
     memcpy(bufor,"3d vector calcualtions",BUFFER_SIZE);
@@ -108,16 +109,25 @@ int main(int argc, char** argv)
 
     ProgData data;
     loadData(argv[1],&data);
+    
+    float x1;
+    float x2;
+    float y1;
+    float y2;
 
-    Vector2 vec2 = getLineFromPoints((Vector2){0,0} , (Vector2){1,1});
+    // -------------------------------------------------- INLINE DATA progData ---------------------------------------------------------------------
+    // here introduce INLINE DATA that is stored in memory and then written using prepareData() and prepareLabels()
+    // automatically checked for out of bounds
+    
+    Vector2 point1 = (Vector2){-10.0f,-10.0f};
+    Vector2 point2 = (Vector2){10.0f,10.0f};
+    Vector3 circle = (Vector3){2.0f,2.0f,2.0f};
+    Vector2 line = getLineFromPoints(point1,point2);
 
-    printf("line from points: (0,0) (1,0) y = %fx + %f", vec2.x, vec2.y);
+    splitCircle(circle,line,6,&data);
 
-    splitCircle((Vector3){10.0f,10.0f,5.0f},(Vector2){2.0f,0.0f},10,&data);
+    #ifdef TEST
 
-    //generateCircle((Vector3){10.0f,1.0f,3.0f},0,&data);
-
-    /*
     printf("twoDimCount: %llu\nelementsCount: %llu\n",data.twoDimCount,data.elementsCount);
     
     for (size_t i = 0; i < data.twoDimCount; i++)
@@ -140,21 +150,45 @@ int main(int argc, char** argv)
         }
         printf("\n");
     }
-    */
-    
-    float x1;
-    float x2;
-    float y1;
-    float y2;
+
+    #endif //TEST
+
+    // -------------------------------------------------- INLINE DATA progData ---------------------------------------------------------------------
     
     prepareData(filenamePlotData,&data,&x1,&x2,&y1,&y2);
-    prepareLabels(filenameLabelsDate,&data);
-    
-    // TODO: do funkcji
-    
-    // gnuplot script
-   
-    
+    prepareLabels(filenameLabelsData,&data);
+
+    // -------------------------------------------------- INLINE DATA raw ---------------------------------------------------------------------
+    // here introduce INLINE DATA that is written directly to text file specified in filename... variable
+    // When finished introducing INLINE DATA
+    // check if INLINE DATA is out of plotting area
+
+    writeNewVector(filenamePlotData,point1,point2);
+
+    // -------------------------------------------------- INLINE DATA raw ---------------------------------------------------------------------
+
+    if (x1 > point1.x)
+    {
+        x1 = point1.x;
+    }
+
+    if (x2 < point2.x)
+    {
+        x2 = point2.x;
+    }
+
+    if (y1 > point1.y)
+    {
+        y1 = point1.y;
+    }
+
+    if (y2 < point2.y)
+    {
+        y2 = point2.y;
+    }
+
+    // ----------------------------------------------- CHECK INLINE DATA ----------------------------------------------------------------------
+
     lua_State *L = luaL_newstate(); // Create a new Lua state
     luaL_openlibs(L); // Load Lua libraries
     
@@ -171,7 +205,7 @@ int main(int argc, char** argv)
     lua_pushinteger(L, (int)y1);
     lua_pushinteger(L, (int)y2);
     lua_pushstring(L, filenamePlotData);
-    lua_pushstring(L, filenameLabelsDate);
+    lua_pushstring(L, filenameLabelsData);
     if (lua_pcall(L, 6, 0, 0) != LUA_OK) 
     {
         fprintf(stderr, "Error: %s\n", lua_tostring(L, -1));

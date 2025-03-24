@@ -1,2 +1,5 @@
 #STATIC libraries
 *.a
+
+#IMAGES
+*.png
